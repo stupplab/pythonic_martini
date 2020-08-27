@@ -3,6 +3,10 @@
 # Compatible with Python2
 # EDITABLE SECTIONS ARE MARKED WITH #@# 
 
+###########################################################
+# Edited by Stupp Lab members to include palmatic residues
+###########################################################
+
 
 version="2.4"
 authors=["Djurre de Jong", "Jaakko J. Uusitalo", "Tsjerk A. Wassenaar"]

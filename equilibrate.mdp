@@ -1,0 +1,103 @@
+;
+; STANDARD MD INPUT OPTIONS FOR MARTINI 2.0
+;
+; for use with GROMACS 3.3
+;
+
+; RUN CONTROL PARAMETERS    = 
+; MARTINI - Most simulations are stable with dt=40 fs,
+; some (especially rings) require 20-30 fs.
+; The range of time steps used for parametrization  
+; is 20-40 fs, using smaller time steps is therefore not recommended.
+
+integrator                  = md
+; start time and timestep in ps
+tinit                       = 0.0
+dt                          = 0.025
+nsteps                      = 40000000
+; number of steps for center of mass motion removal = 
+nstcomm                     = 100
+comm-grps               = 
+
+; OUTPUT CONTROL OPTIONS    = 
+; Output frequency for coords (x), velocities (v) and forces (f) = 
+nstxout                     = 40000
+nstvout                     = 40000
+nstfout                     = 0
+; Output frequency for energies to log file and energy file = 
+nstlog                      = 40000
+nstenergy                   = 40000
+; Output frequency and precision for xtc file = 
+nstxtcout                   = 0
+xtc_precision               = 0
+; This selects the subset of atoms for the xtc file. You can = 
+; select multiple groups. By default all atoms will be written. = 
+xtc-grps                    = 
+; Selection of energy groups = 
+energygrps                  = 
+
+; NEIGHBORSEARCHING PARAMETERS = 
+; MARTINI - no need for more frequent updates 
+; or larger neighborlist cut-off due
+; to the use of shifted potential energy functions.
+
+cutoff-scheme           = Verlet
+nstlist                 = 10
+; ns algorithm (simple or grid) = 
+ns_type                     = grid
+; Periodic boundary conditions: xyz or no = 
+pbc                         = xyz 
+verlet-buffer-tolerance = 0.005
+
+; OPTIONS FOR ELECTROSTATICS AND VDW = 
+; MARTINI - vdw and electrostatic interactions are used
+; in their shifted forms. Changing to other types of
+; electrostatics will affect the general performance of
+; the model.
+
+; Method for doing electrostatics = 
+coulombtype             = reaction-field
+rcoulomb                = 1.1
+epsilon_r               = 15
+; Method for doing Van der Waals = 
+vdw_type                    = cutoff
+vdw-modifier            = Potential-shift-verlet
+rvdw                    = 1.1
+
+; OPTIONS FOR WEAK COUPLING ALGORITHMS = 
+; MARTINI - normal temperature and pressure coupling schemes 
+; can be used. It is recommended to couple individual groups
+; in your system seperately.
+
+; Temperature coupling      = 
+tcoupl                      = v-rescale
+tau_t                       = 1.0 1.0
+tc-grps                     = protein non-protein 
+ref_t                       = 303 303
+Pcoupl                      = Berendsen  
+Pcoupltype                  = isotropic
+tau_p                       = 3.0
+compressibility             = 3e-4 3e-4 
+ref_p                       = 1.0  1.0
+
+
+; GENERATE VELOCITIES FOR STARTUP RUN = 
+gen_vel                     = yes 
+gen_temp                    = 303
+gen_seed                    = 474529
+
+; OPTIONS FOR BONDS         = 
+; MARTINI - for ring systems constraints are defined
+; which are best handled using Lincs. 
+
+constraints                 = none 
+; Type of constraint algorithm = 
+constraint_algorithm        = Lincs
+; Do not constrain the start configuration = 
+unconstrained_start         = no
+; Highest order in the expansion of the constraint coupling matrix = 
+lincs_order                 = 4
+; Lincs will write a warning to the stderr if in one step a bond = 
+; rotates over more degrees than = 
+lincs_warnangle             = 30
+
