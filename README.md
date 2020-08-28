@@ -4,26 +4,25 @@ Python scripts for creating and simulating macromolecules using MARTINI / GROMAC
 
     Built using python3.8
 
-Install this software into your python package directory by running
 
-    python setup.py install --user
-
-Run the example script from anywhere. It will create the directory example, then prepare and run the PA-peptide coassembly simulation inside it.
-    
-    python example_script.py
-
-
-Original or selectively modified martini files are:\
-- martini_v2.0_ions.itp
-- martini_v2.2.itp
-- martinize.py
-- top_all36_prot_forPAs.rtf
-
-
-Software prerequisites:
+## Software prerequisites:
+- Python3
 - numpy
 - vmd 
 - GROMACS
+
+
+You can download the package and run the example script using the following commands. Running example_script will create the directory 'example', then prepare and run the PA-peptide coassembly simulation inside it.
+    
+    git clone https://github.com/stupplab/pythonic_martini.git
+    cd pythonic_martini
+    python example_script.py
+
+
+If you want to run the example script from anywhere, i.e., import pythonic_martini from anywhere, install the package in you local python package directory by running
+
+    python setup.py install --user
+
 
 Typical simulation steps when using MARTINI to simulation a peptide amphiphile molecule are:
 - Make all-atom .pdb file (here using vmd) from a starting pdb file containing generic structure for the molecule
@@ -34,8 +33,17 @@ Typical simulation steps when using MARTINI to simulation a peptide amphiphile m
 - Run minimization (tiny simulation) to relax the initialization artifacts
 - Run equilibration (main simulation)
 
+main.py is the main script that lets you do all the above as shown by the example
+
+
 
 ## Additional details
 variable ending with 'filename' are file names with extensions, whereas variables ending with 'name' are without extensions and will be used to read/write from multiple extensions.
 
-main.py is the main script.
+Original or selectively modified martini files are:\
+- martini_v2.0_ions.itp
+- martini_v2.2.itp
+- martinize.py
+- top_all36_prot_forPAs.rtf
+
+
