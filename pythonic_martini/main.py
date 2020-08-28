@@ -16,7 +16,6 @@ martini_itp    = "martini_v2.2.itp"
 martini_ionitp = "martini_v2.0_ions.itp"
 
 
-#name ='PA' # generic name for a peptide amphiphile
 
 
 def gen_PA(name):
