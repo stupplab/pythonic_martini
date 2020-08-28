@@ -2,7 +2,15 @@
 
 Python scripts for creating and simulating macromolecules using MARTINI / GROMACS, targeted for peptide amphiphiles.
 
-    main.py is the main script.
+    Built using python3.8
+
+Install this software into your python package directory by running
+
+    python setup.py install --user
+
+Run the example script from anywhere. It will create the directory example, then prepare and run the PA-peptide coassembly simulation inside it.
+    
+    python example_script.py
 
 
 Original or selectively modified martini files are:\
@@ -30,3 +38,4 @@ Typical simulation steps when using MARTINI to simulation a peptide amphiphile m
 ## Additional details
 variable ending with 'filename' are file names with extensions, whereas variables ending with 'name' are without extensions and will be used to read/write from multiple extensions.
 
+main.py is the main script.

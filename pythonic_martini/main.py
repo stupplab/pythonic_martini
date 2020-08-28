@@ -11,10 +11,9 @@ import json
 import warnings
 
 
-this_path = os.getcwd()+'/pythonic_martini'
+this_path = os.path.dirname(os.path.abspath(__file__))
 martini_itp    = "martini_v2.2.itp"
 martini_ionitp = "martini_v2.0_ions.itp"
-
 
 
 
