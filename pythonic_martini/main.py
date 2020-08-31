@@ -600,13 +600,15 @@ def minimization(mdpfilename, topfilename, grofilename, tprname):
         -p %s \
         -c %s \
         -o %s.tpr -maxwarn 1'%(mdpfilename,topfilename,grofilename,tprname))
+    
     os.system('gmx mdrun \
         -deffnm %s -v'%tprname)
 
     
 
 def prepare_eq_tpr(mdpfilename, topfilename, grofilename, tprname):
-    # create PA_eq.tpr for mdrun
+    # create .tpr for mdrun
+    
     os.system('gmx grompp \
         -f %s \
         -p %s \
