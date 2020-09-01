@@ -15,11 +15,11 @@ from pythonic_martini import main
 ## Simulation parameters
 PA_seq             = 'C16VVAAEE'
 num_PA             = 4
-pep_seq            = 'DFFPV'
+pep_seq            = 'KRDE'
 num_pep            = 8
-Ctermini_type      = 'OH'           # currently accepts OH or NH2 
-PA_charge          = -1             # Net charge on the PA molecule - places the charge at the outermost possible residue
-pep_charge         = -1
+Ctermini_type      = 'NH2'                                  # currently accepts OH or NH2, OH results in -1 charge
+residuecharge_PA   = [('K',0),('R',0),('D',0),('E',-1)]     # residues, charge list of the peptide sequence, accepts 0, -1, 1
+residuecharge_pep  = []                                     # No charge state is asked for, so by default all KRDE resdiues are charged
 Lx                 = 4
 Ly                 = 4
 Lz                 = 4
@@ -27,10 +27,11 @@ Lz                 = 4
 
 
 ################## Now the script that prepares and runs the simulation ##################
-## Create a directory for this example and go inside it
-if not os.path.exists('example'):
-    os.mkdir('example')
-os.chdir('example')
+## Create a directory path for this example and go inside it
+path = './example'
+if not os.path.exists(path):
+    os.mkdir(path)
+os.chdir(path)
 
 
 ## Make the all-atom <name>_aa.pdb of PA and pep using vmd, the generic PA backbone structure used is 
@@ -41,8 +42,8 @@ main.make_aa_pdb(pep_seq, name='pep')
 
 ## Create coarse-grained version of PA and pep molecules using the <name>_aa.pdb
 ## This generate <name>.itp, <name>.top and <name>.pdb files
-main.create_CGfiles_using_martinizepy(Ctermini_type, PA_charge, name='PA')
-main.create_CGfiles_using_martinizepy(Ctermini_type, pep_charge, name='pep')
+main.create_CGfiles_using_martinizepy(Ctermini_type, residuecharge_PA, name='PA')
+main.create_CGfiles_using_martinizepy(Ctermini_type, residuecharge_pep, name='pep')
 
 
 ## Create a simulation box with desired number of PA molecules
