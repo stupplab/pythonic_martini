@@ -644,50 +644,12 @@ def equilibration(tprfilename, mpi=False):
 
 
 
-def main(pep_seq, Lx,Ly,Lz, nmol, charge, Ctermini_type):
-    ## OBSOLETE    
-    make_aa_pdb(pep_seq)
-    create_CGfiles_using_martinizepy(Ctermini_type, charge)
-    create_simulation_box(Lx,Ly,Lz,nmol)
-    solvate()
-    add_ions()
-    minimization()
-    
-    # prepare_eq_tpr()
-    # equilibration(mpi=False)
-
-
 
 
 
 if __name__=='__main__':
     
-    if not os.path.isfile('signac_statepoint.json'):
-        raise FileNotFoundError('signac_statepoint.json file needs to be created with all the parameters required here.\
-            Example file:            \n \
-            {                        \n \
-              "pep_seq": "VEVE",     \n \
-              "nmol": 100,           \n \
-              "Lx": 12.5,            \n \
-              "Ly": 12.5,            \n \
-              "Lz": 12.5,            \n \
-              "Ctermini_type": "OH", \n \
-              "charge": -1           \n \
-            }')
-
-    
-    with open('signac_statepoint.json', 'r') as f:
-        sp = json.load(f)
-        
-        pep_seq       = sp['pep_seq']
-        nmol          = sp['nmol']
-        Lx            = sp['Lx']
-        Ly            = sp['Ly']
-        Lz            = sp['Lz']
-        Ctermini_type = sp['Ctermini_type']
-        charge        = sp['charge']
-        
-        main(pep_seq, Lx,Ly,Lz, nmol, charge, Ctermini_type)
+    print('main.py should not be run directly, it to be used in a script. See example_script.py')
 
     
 
