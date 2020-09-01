@@ -119,7 +119,7 @@ main.minimization(
     mdpfilename    = 'minimize.mdp',
     topfilename    = 'coPA.top',
     grofilename    = 'coPA_water.gro',
-    tprname        = 'coPA_water_min')
+    tprfilename    = 'coPA_water_min.tpr')
 
 
 ## Copy the equilibrate.mdp (can be custom made) file into the example directory
@@ -130,10 +130,10 @@ main.prepare_eq_tpr(
     mdpfilename    = 'equilibrate.mdp',
     topfilename    = 'coPA.top',
     grofilename    = 'coPA_water_min.gro',
-    tprname        = 'coPA_water_eq')
+    tprfilename    = 'coPA_water_eq.tpr')
 
 ## Run the simulation
-main.equilibration('coPA_water_eq')
+main.equilibration(tprfilename='coPA_water_eq.tpr')
 
 
 ## Remove any backup files created by the gromacs in this whole process

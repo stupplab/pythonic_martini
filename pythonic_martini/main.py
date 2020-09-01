@@ -603,33 +603,35 @@ def add_ions(inwhichfilename, nions, vdwradius, outfilename, topfilename):
 
 
 
-def minimization(mdpfilename, topfilename, grofilename, tprname):
+def minimization(mdpfilename, topfilename, grofilename, tprfilename):
     # Minimization
     os.system('gmx grompp \
         -f %s \
         -p %s \
         -c %s \
-        -o %s.tpr -maxwarn 1'%(mdpfilename,topfilename,grofilename,tprname))
+        -o %s -maxwarn 1'%(mdpfilename,topfilename,grofilename,tprfilename))
     
+    tprname = os.path.basename(tprfilename).strip('.tpr')
     os.system('gmx mdrun \
         -deffnm %s -v'%tprname)
 
     
 
-def prepare_eq_tpr(mdpfilename, topfilename, grofilename, tprname):
+def prepare_eq_tpr(mdpfilename, topfilename, grofilename, tprfilename):
     # create .tpr for mdrun
     
     os.system('gmx grompp \
         -f %s \
         -p %s \
         -c %s \
-        -o %s.tpr -maxwarn 1'%(mdpfilename,topfilename,grofilename,tprname))
+        -o %s -maxwarn 1'%(mdpfilename,topfilename,grofilename,tprfilename))
 
 
 
-def equilibration(tprname, mpi=False):
+def equilibration(tprfilename, mpi=False):
     ## Equilibration
 
+    tprname = os.path.basename(tprfilename).strip('.tpr')
     ## Also prepare tpr
     if not mpi:
         os.system('gmx mdrun \
