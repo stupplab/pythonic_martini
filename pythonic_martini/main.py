@@ -16,6 +16,12 @@ martini_itp    = "martini_v2.2.itp"
 martini_ionitp = "martini_v2.0_ions.itp"
 
 
+amino_acid_1to3_lettercode = {'A':"ALA",'C':"CYS",'D':"ASP",'E':"GLU",'F':"PHE", 
+                'G':"GLY",'H':"HIS",'I':"ILE",'K':"LYS",'L':"LEU", 
+                'M':"MET",'N':"ASN",'P':"PRO",'Q':"GLN",'R':"ARG", 
+                'S':"SER",'T':"THR",'V':"VAL",'W':"TRP",'Y':"TYR"}
+
+
 
 def gen_PA(name):
     # Write a gen_PA.pgn file specific to PA_name
@@ -103,6 +109,11 @@ def generic_to_specific_PA(PA_seq, name):
 
 
 
+
+
+
+
+
 def make_aa_pdb(PA_seq, name):
     """Make the all-atom pdb file <name>_aa.pdb for the PA_seq using vmd
     PA_seq is in string format. Example: C12VVAAEE. 
@@ -116,13 +127,18 @@ def make_aa_pdb(PA_seq, name):
 
 
 
-def create_CGfiles_using_martinizepy(Ctermini_type, set_charge, name):
-    """ Run martinize.py to create .top, .pdb, .itp files. 
+def create_CGfiles_using_martinizepy(Ctermini_type, res_charge=[], name='pep'):
+    """ Run martinize.py to create <name>.top, <name>.pdb, <name>.itp files. 
     Ctermini_type: NH2 vs OH decide amide vs carboxylate (charged) termini
-    Simplistic modification of .itp to put <charge> (is integer) 
-    amount of charge on the farthest-from-hydrophobic side of PA.
+    Modifies .itp to set <res_charge> as asked.
+    
+    res_charge is the list of (residue,charge) tuples 
+    in order to how they appear in the <name>.itp and the sequence given to make_aa_pdb.
+    Only K,L,D,E residues are looked at for charging or discharging, rest are ignored.
+    Extra residues (e.g. 2 Ks are defined for the peptide with 1 K), if defined, are also ignored
+    
     Raises error if putting charge is not plausible.
-    NOTE: requires the heading [ atoms ] to be written as such 
+    NOTE: requires the heading [ atoms ] in .itp to be written as such 
     and rest of the lines to be contiguous - no linebreak
     """
 
@@ -134,7 +150,7 @@ def create_CGfiles_using_martinizepy(Ctermini_type, set_charge, name):
         -ss CCCCCCCCCCCC '%(this_path,name,name,name,name))
 
 
-    # Collect lines defining atoms
+    # Collect lines defining atoms, breaks define start and end
     lines_atoms = []
     break1,break2 = None,None
     with open('%s.itp'%name, 'r') as f:
@@ -154,7 +170,9 @@ def create_CGfiles_using_martinizepy(Ctermini_type, set_charge, name):
         
     
 
-    # Modify lines_atoms as per Ctermini
+    
+    # The above code puts neutral P5 at C-terminus, which corresponds to the NH2 termini
+    # Below code sets the Ctermini OH, at the last BB bead found
     charged_thusfar = 0
     if Ctermini_type.upper() == 'OH':
         for i in range(len(lines_atoms))[::-1]:
@@ -165,74 +183,63 @@ def create_CGfiles_using_martinizepy(Ctermini_type, set_charge, name):
                 break
 
 
-    # modify charge of side chains,
-    # CURRENTLY only neutralizes if Qd SC is found (deprotonation)
-    neutralize_ahead = False
-    if set_charge < 0: # deprotonation
-        for i in range(len(lines_atoms))[::-1]:
-            if charged_thusfar == set_charge:
-                neutralize_ahead = True
+    # set <res_charge> in <name>.itp
+    # Charged amino acids are: (+ive) K, R ; (-ive) D, E
+    res_charge_SC = []
+    for res,charge in res_charge:
+        if res.upper() in 'KR':
+            res_charge_SC += [[amino_acid_1to3_lettercode[res],charge,'SC2']]
+        elif res.upper() in 'DE':
+            res_charge_SC += [[amino_acid_1to3_lettercode[res],charge,'SC1']]
+
+    k=0
+    for i,line in enumerate(lines_atoms):
+        if k==len(res_charge_SC):
+            break
+        res,charge,SC = res_charge_SC[k]
+        if (res in line) and (SC in line):
+            if (res == 'LYS'):
+                if charge == 0:
+                    lines_atoms[i]   = lines_atoms[i].replace(' 1.0', ' 0.0')
+                    lines_atoms[i]   = lines_atoms[i].replace('Qd', 'P1')
+                elif charge == 1:
+                    lines_atoms[i]   = lines_atoms[i].replace(' 0.0', ' 1.0')
+                    lines_atoms[i]   = lines_atoms[i].replace(line.split()[1], 'Qd')
+                else:
+                    raise ValueError('Charge other than 0 or 1 is set for LYS')
+
+            elif (res == 'ARG'):
+                if charge == 0:
+                    lines_atoms[i]   = lines_atoms[i].replace(' 1.0', ' 0.0')
+                    lines_atoms[i]   = lines_atoms[i].replace('Qd', 'P4')
+                elif charge == 1:
+                    lines_atoms[i]   = lines_atoms[i].replace(' 0.0', ' 1.0')
+                    lines_atoms[i]   = lines_atoms[i].replace(line.split()[1], 'Qd')
+                else:
+                    raise ValueError('Charge other than 0 or 1 is set for ARG')
             
-            if ('SC' in lines_atoms[i]) and ('-1.0' in lines_atoms[i]):
-                if 'Qa' not in lines_atoms[i]:
-                    raise RuntimeError('-1.0 charge without Qa bead is found')
-                if neutralize_ahead:
+            elif (res == 'GLU'):
+                if charge == 0:
                     lines_atoms[i]   = lines_atoms[i].replace('-1.0', ' 0.0')
                     lines_atoms[i]   = lines_atoms[i].replace('Qa', 'P1')
+                elif charge == -1:
+                    lines_atoms[i]   = lines_atoms[i].replace(' 0.0', '-1.0')
+                    lines_atoms[i]   = lines_atoms[i].replace(line.split()[1], 'Qa')
                 else:
-                    charged_thusfar += -1
-
-            if ('SC' in lines_atoms[i]) and (' 1.0' in lines_atoms[i]):
-                if 'Qd' not in lines_atoms[i]:
-                    raise RuntimeError('1.0 charge without Qd bead is found')
-                lines_atoms[i]   = lines_atoms[i].replace('1.0', ' 0.0')
-                lines_atoms[i]   = lines_atoms[i].replace('Qd', 'P1')
-
-        if charged_thusfar != set_charge:
-            raise ValueError('Peptide sequence could not be used to achieve set_charge')
-
-    elif set_charge == 0: # protonation-deprotonation
-        if Ctermini_type == 'OH':
-            raise ValueError('Protonation after deprotonation does not make sense')
-        
-        for i in range(len(lines_atoms))[::-1]:
-            if ('SC' in lines_atoms[i]) and ('-1.0' in lines_atoms[i]):
-                if 'Qa' not in lines_atoms[i]:
-                    raise RuntimeError('-1.0 charge without Qa bead is found')
-                lines_atoms[i]   = lines_atoms[i].replace('-1.0', ' 0.0')
-                lines_atoms[i]   = lines_atoms[i].replace('Qa', 'P1')
-
-            if ('SC' in lines_atoms[i]) and (' 1.0' in lines_atoms[i]):
-                if 'Qd' not in lines_atoms[i]:
-                    raise RuntimeError('1.0 charge without Qd bead is found')
-                lines_atoms[i]   = lines_atoms[i].replace('1.0', ' 0.0')
-                lines_atoms[i]   = lines_atoms[i].replace('Qd', 'P1')
-    
-    elif set_charge > 0: # protonation
-        if Ctermini_type == 'OH':
-            raise ValueError('Protonation after deprotonation does not make sense')
-
-        for i in range(len(lines_atoms))[::-1]:
-            if charged_thusfar == set_charge:
-                neutralize_ahead = True
-
-            if ('SC' in lines_atoms[i]) and ('-1.0' in lines_atoms[i]):
-                if 'Qa' not in lines_atoms[i]:
-                    raise RuntimeError('-1.0 charge without Qa bead is found')
-                lines_atoms[i]   = lines_atoms[i].replace('-1.0', ' 0.0')
-                lines_atoms[i]   = lines_atoms[i].replace('Qa', 'P1')
-                
-            if ('SC' in lines_atoms[i]) and (' 1.0' in lines_atoms[i]):
-                if 'Qd' not in lines_atoms[i]:
-                    raise RuntimeError('1.0 charge without Qd bead is found')
-                if neutralize_ahead:
-                    lines_atoms[i]   = lines_atoms[i].replace('1.0', ' 0.0')
-                    lines_atoms[i]   = lines_atoms[i].replace('Qd', 'P1')
+                    raise ValueError('Charge other than 0 or -1 is set for GLU')
+            
+            elif (res == 'ASP'):
+                if charge == 0:
+                    lines_atoms[i]   = lines_atoms[i].replace('-1.0', ' 0.0')
+                    lines_atoms[i]   = lines_atoms[i].replace('Qa', 'P3')
+                elif charge == -1:
+                    lines_atoms[i]   = lines_atoms[i].replace(' 0.0', '-1.0')
+                    lines_atoms[i]   = lines_atoms[i].replace(line.split()[1], 'Qa')
                 else:
-                    charged_thusfar += 1
-        
-        if charged_thusfar != set_charge:
-            raise ValueError('Peptide sequence could not be used to achieve set_charge')
+                    raise ValueError('Charge other than 0 or 1 is set for LYS')
+
+            k=k+1
+            
 
 
     data_new = ''
@@ -243,7 +250,7 @@ def create_CGfiles_using_martinizepy(Ctermini_type, set_charge, name):
     for line in data[break2:]:
         data_new += line
     
-    
+
     with open('%s.itp'%name, 'w') as f:
         f.write(data_new)
 
@@ -381,6 +388,9 @@ def insert_water(inwhichfilename, volume, vdwradius, outfilename, topfilename):
 
 
 def solvate(inwhichfilename, vdwradius, topfilename, outfilename):
+    """Add water to the simulation box using a premade gro file - water-12.5.gro
+    """
+
     water = 'water-12.5'
     os.system('gmx solvate \
         -cp %s \
