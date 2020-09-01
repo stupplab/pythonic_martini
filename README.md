@@ -6,11 +6,13 @@ Python scripts for creating and simulating macromolecules using MARTINI / GROMAC
 
 
 ## Software prerequisites:
-- Python3
+- Python3 
+- Python2 (for martinize.py)
 - numpy
-- vmd 
+- vmd     
 - GROMACS
 
+(vmd and gromacs should be callable at the command line)
 
 You can download the package and run the example script using the following commands. Running example_script will create the directory 'example', then prepare and run the PA-peptide coassembly simulation inside it.
     
