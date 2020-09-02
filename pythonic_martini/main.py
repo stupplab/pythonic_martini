@@ -611,7 +611,7 @@ def minimization(mdpfilename, topfilename, grofilename, tprfilename):
         -c %s \
         -o %s -maxwarn 1'%(mdpfilename,topfilename,grofilename,tprfilename))
     
-    tprname = os.path.basename(tprfilename).strip('.tpr')
+    tprname = os.path.basename(tprfilename).replace('.tpr','')
     os.system('gmx mdrun \
         -deffnm %s -v'%tprname)
 
@@ -631,7 +631,7 @@ def prepare_eq_tpr(mdpfilename, topfilename, grofilename, tprfilename):
 def equilibration(tprfilename, mpi=False):
     ## Equilibration
 
-    tprname = os.path.basename(tprfilename).strip('.tpr')
+    tprname = os.path.basename(tprfilename).replace('.tpr','')
     ## Also prepare tpr
     if not mpi:
         os.system('gmx mdrun \
