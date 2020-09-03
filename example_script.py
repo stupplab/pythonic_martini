@@ -15,7 +15,7 @@ from pythonic_martini import main
 ## Simulation parameters
 PA_seq             = 'C16VVAAEE'
 num_PA             = 4
-pep_seq            = 'KRDE'
+pep_seq            = 'KRDEK'
 num_pep            = 8
 Ctermini_type      = 'NH2'                                  # currently accepts OH or NH2, OH results in -1 charge
 residuecharge_PA   = [('E',0),('E',-1)]                     # residues, charge list of the peptide sequence, accepts 0, -1, 1
@@ -57,9 +57,12 @@ main.create_simulation_box(Lx,Ly,Lz,
 
 
 ## Insert pep molecules in the box and update the .top file
+# These insert commands may not add the exact number of molecules,
+# usually it is not important for a large system 
+# but you can reduce vdwradius to increase probability of molecule addition
 main.insert_molecules('coPA_box.gro', 'pep', 
     nmol        = num_pep, 
-    vdwradius   = 0.4, 
+    vdwradius   = 0.2, 
     outfilename = 'coPA_box.gro', 
     topfilename = 'coPA.top')
 
@@ -88,27 +91,23 @@ main.solvate('coPA_box.gro',
 main.neutralize_system(
     inwhichfilename = 'coPA_water.gro',
     molname         = 'PA',
-    vdwradius       = 0.21,
     outfilename     = 'coPA_water.gro',
     topfilename     = 'coPA.top')
 
 main.neutralize_system(
     inwhichfilename = 'coPA_water.gro',
     molname         = 'pep',
-    vdwradius       = 0.21,
     outfilename     = 'coPA_water.gro',
     topfilename     = 'coPA.top')
-
 
 
 ## Increation the ionic strength (if desired) by adding <nions> amount of NA and CL atoms.
-
-main.add_ions(
+main.increase_ionic_strength(
     inwhichfilename = 'coPA_water.gro',
-    nions           = 10, 
-    vdwradius       = 0.21, 
+    nions           = 10,
     outfilename     = 'coPA_water.gro',
     topfilename     = 'coPA.top')
+
 
 
 ## copy the minimize.mdp (can be custom made) file into the example directory
@@ -132,10 +131,13 @@ main.prepare_eq_tpr(
     grofilename    = 'coPA_water_min.gro',
     tprfilename    = 'coPA_water_eq.tpr')
 
+
+## Remove any backup files created by the gromacs in this whole process
+os.system('rm \#*')
+
+
 ## Run the simulation
 main.equilibration(tprfilename='coPA_water_eq.tpr')
 
 
-## Remove any backup files created by the gromacs in this whole process
-os.system('rm \#*')
 

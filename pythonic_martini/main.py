@@ -1,6 +1,12 @@
 """Python functions to create and simulate PAs
 tested using GROMACS-5
 Maintainer: Mayank Agrawal
+
+
+
+Additional info;
+
+out.log file, you find here, is only used for dumping the output of some commands
 """
 
 
@@ -109,6 +115,64 @@ def generic_to_specific_PA(PA_seq, name):
 
 
 
+
+
+def _actual_atoms_added(filename, keyword):
+    """Count the number of lines with <keyword> in the <filename> - usually gro or pdb file
+    """
+    num_keyword = 0
+    with open(filename, 'r') as f:
+        for line in f:
+            if keyword in line:
+                num_keyword += 1
+
+    return num_keyword
+
+
+
+
+def _actual_molecules_added(filename, itpfilename):
+    """Calculate the number of molecules, defined in <itpfilename>, 
+    in <filename> - usually gro or pdb file
+    """
+    
+    # get atom names from the <molname>.itp
+    atom_names=[]
+    start=False
+    with open(itpfilename, 'r') as f:
+        for line in f:
+            if not start:
+                if '[ atoms ]' in line:
+                    start = True
+                    continue
+            if start:
+                if line.split()==[]:
+                    start = False
+                    break
+                atom_names += [line.split()[3]]
+      
+    # get all the atom names from the <outfilename>
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+    all_names = [] # e.g. PAM, ALA, GLU
+    for line in lines:
+        if line.split()==[]:
+            continue
+        all_names += [line.split()[0].lstrip('0123456789')]
+
+    # now count number of atom_names sequence in all_names
+    actual_nmol = 0
+    natoms = len(atom_names)
+    i = 0
+    while i<len(all_names):
+        if all_names[i:i+natoms] == atom_names:
+            i += natoms
+            actual_nmol += 1
+        else:
+            i += 1
+
+
+    return actual_nmol
 
 
 
@@ -273,18 +337,17 @@ def create_simulation_box(Lx,Ly,Lz,nmol,molname,vdwradius,boxfilename, topfilena
         -o %s &> out.log'%(Lx,Ly,Lz,nmol,molname,vdwradius,boxfilename))
 
     
-    # Actual nmol added
-    with open('out.log', 'r') as f:
-        for line in f:
-            if 'Added' in line:
-                nmol = int(line.split()[1])
+    
+    # Calculate actual nmol added
+    actual_nmol = _actual_molecules_added(boxfilename, '%s.itp'%molname)
+
     
     # read <molname>.top
     with open('%s.top'%molname, 'r') as f:
         data = ''
         for line in f:
             if len(line.split())!=0 and line.split()[0]=='%s'%molname:
-                data+='%s'%molname + ' '*(9-len(molname)) + '%s\n'%nmol
+                data+='%s'%molname + ' '*(9-len(molname)) + '%s\n'%actual_nmol
             else:
                 data+=line
         
@@ -312,11 +375,9 @@ def insert_molecules(inwhichfilename, molname, nmol, vdwradius, outfilename, top
             -radius %s \
             -o %s &> out.log'%(inwhichfilename,nmol,molname,vdwradius,outfilename))
 
-    # Actual nmol added
-    with open('out.log', 'r') as f:
-        for line in f:
-            if 'Added' in line:
-                nmol = int(line.split()[1])
+    
+    # Calculate actual nmol added
+    actual_nmol = _actual_molecules_added(outfilename, '%s.itp'%molname)
 
 
     # Update .top file to 
@@ -331,13 +392,13 @@ def insert_molecules(inwhichfilename, molname, nmol, vdwradius, outfilename, top
                 data+='#include "%s.itp"\n'%molname +line
                 itp_added = True
             if len(line.split())!=0 and line.split()[0]=='%s'%molname:
-                data+=molname + ' '*(9-len(molname)) + '%s\n'%nmol
+                data+=molname + ' '*(9-len(molname)) + '%s\n'%actual_nmol
                 mol_added = True
             else:
                 data+=line
 
         if not mol_added:
-            data += molname + ' '*(9-len(molname)) + '%s\n'%nmol
+            data += molname + ' '*(9-len(molname)) + '%s\n'%actual_nmol
     
     with open('%s'%topfilename, 'w') as f:
         f.write(data)
@@ -358,12 +419,10 @@ def insert_water(inwhichfilename, volume, vdwradius, outfilename, topfilename):
             -radius %s \
             -o %s &> out.log'%(inwhichfilename,num_water,this_path,vdwradius,outfilename))
 
-    # Actual nmol added
-    with open('out.log', 'r') as f:
-        for line in f:
-            if 'Added' in line:
-                nmol = int(line.split()[1])
-
+    
+    # Actual W atoms added
+    nmol = _actual_atoms_added(outfilename, 'W ')
+    
 
     # Update .top file to 
     # append/update number of <molname> molecules
@@ -398,12 +457,10 @@ def solvate(inwhichfilename, vdwradius, topfilename, outfilename):
         -radius %s -o %s &> out.log'%(inwhichfilename,this_path,water,vdwradius,outfilename))
 
     
-    # Append/Update number of water molecules in .top file
-    with open('out.log', 'r') as f:
-        for line in f:
-            if 'Number of solvent molecules:' in line:
-                nmol_W = int(line.split()[-1])
+    # Actual W atoms added
+    nmol_W = _actual_atoms_added(outfilename, 'W ')
     
+
     added=False
     with open(topfilename, 'r') as f:
         data = ''
@@ -423,10 +480,108 @@ def solvate(inwhichfilename, vdwradius, topfilename, outfilename):
 
 
 
-def neutralize_system(inwhichfilename, molname, vdwradius, outfilename, topfilename):
-    # neutralize the <molname> using the charge from <molname>.itp and update <topfilename>
+def add_ions(inwhichfilename, ionname, nions, outfilename, topfilename):
+    """
+    Replaces <nions> number of W in <inwhichfilename> with ion <ionname>.
+    Updates the topfile to correct number of W and ions
 
-    """Old script that replaces water with ions 
+    ionname: Currently only accepts NA or CL
+
+    This method i used by neutralize_system and increase_ionic_strength
+    """
+
+    if nions==0:
+        warnings.warm('Zero %s ions are asked to add. Doing nothing.'%ionname)
+        return
+
+    
+    if 'NA' in ionname.upper():
+        ionname = 'NA'
+        ion     = 'NA+'
+    elif 'CL' in ionname.upper():
+        ionname = 'CL'
+        ion     = 'CL-'
+
+    else:
+        raise ValueError('%s not recognized'%ionname)
+
+    
+
+    # include martini_ionitp in topfilename if not already included
+    os.system('cp %s/%s ./'%(this_path,martini_ionitp))
+
+    with open(topfilename, 'r') as f:
+        data = f.read()    
+    
+    if not '#include "%s"'%martini_ionitp in data:
+        with open(topfilename, 'r') as f:
+            data = ''
+            for line in f:
+                if '#include "%s"'%martini_itp in line:
+                    data+=line+'#include "%s"\n'%martini_ionitp
+                else:
+                    data+=line
+        with open(topfilename, 'w') as f:
+            f.write(data)
+    
+
+    
+
+    # replace last <nions> W atoms with <ionname>
+    with open(inwhichfilename, 'r') as f:
+        lines = f.readlines()
+        
+    added_ions = 0
+    lines_reversed = lines[::-1]
+    for i,line in enumerate(lines_reversed):
+        if added_ions == nions:
+            break
+        if 'W ' in line:
+            lines_reversed[i] = lines_reversed[i].replace(' '*(len(ionname)-1)+'W', ionname)
+            lines_reversed[i] = lines_reversed[i].replace('W'+' '*(len(ion)-1), ion)
+            added_ions += 1
+    lines = lines_reversed[::-1]
+
+    # write outfile
+    with open(outfilename, 'w') as f:
+        f.write(''.join(lines))
+
+
+
+    # recalculate nions and W in the new file
+    # recalculate W atoms added
+    net_W = _actual_atoms_added(outfilename, 'W ')
+    net_nions = _actual_atoms_added(outfilename, ion)
+
+
+
+    # Append/Update number of ions in .top file
+    added=False
+    with open(topfilename, 'r') as f:
+        data = ''
+        for line in f:
+            if len(line.split())!=0 and line.split()[0]==ion:
+                data+=ion+ ' '*(9-len(ion)) + '%s\n'%(net_nions)
+                added=True
+            elif len(line.split())!=0 and line.split()[0]=='W':
+                data+='W'+ ' '*(9-len('W')) + '%s\n'%(net_W)
+            else:
+                data+=line
+    if not added:
+        data += '%s'%ion + ' '*(9-len(ion)) + '%s\n'%net_nions
+    with open(topfilename, 'w') as f:
+        f.write(data)
+
+
+
+
+
+def neutralize_system(inwhichfilename, molname, outfilename, topfilename):
+    """
+    # neutralize the <molname> using the charge from <molname>.itp and update <topfilename>
+    Replace W molecues in <inwhichfilename> and updates topfilename
+
+    Old script that replaces water with ions 
     but requires command line input to choose the continuous solvent group.
     Hence, automation is difficult
     os.system('gmx grompp \
@@ -440,6 +595,7 @@ def neutralize_system(inwhichfilename, molname, vdwradius, outfilename, topfilen
         -p %s.top -o %s_water.gro && 3'%(name,name,name))
     """
 
+    
     # read net charge on PA from.itp
     with open('%s.itp'%molname, 'r') as f:
         charge = 0
@@ -464,141 +620,49 @@ def neutralize_system(inwhichfilename, molname, vdwradius, outfilename, topfilen
 
     if charge < 0:
         # Add NA ions to neutralize the solution
-        os.system('gmx insert-molecules \
-            -f %s \
-            -nmol %s \
-            -ci %s/ion_NA.pdb \
-            -radius %s \
-            -o %s'%(inwhichfilename,nions,this_path,vdwradius,outfilename))
+        add_ions(
+            inwhichfilename,
+            'NA',
+            nions,
+            outfilename,
+            topfilename)
+
 
     elif charge > 0:
         # Add CL ions to neutralize the solution
-        os.system('gmx insert-molecules \
-            -f %s \
-            -nmol %s \
-            -ci %s/ion_CL.pdb \
-            -radius %s \
-            -o %s'%(inwhichfilename,nions,this_path,vdwradius,outfilename))
-
-    if charge!=0:
-        os.system('cp %s/%s ./'%(this_path,martini_ionitp))
-        
-        # include martini_ionitp in topfilename if not already included
-        with open(topfilename, 'r') as f:
-            data = f.read()    
-        
-        if not '#include "%s"'%martini_ionitp in data:
-            with open(topfilename, 'r') as f:
-                data = ''
-                for line in f:
-                    if '#include "%s"'%martini_itp in line:
-                        data+=line+'#include "%s"\n'%martini_ionitp
-                    else:
-                        data+=line
-            with open(topfilename, 'w') as f:
-                f.write(data)
-            
-
-
-        # Append/Update number of ions in .top file
-        # adds the ion amount already present
-        if charge < 0:
-            ion='NA+'
-        else:
-            ion='CL-'
-        added=False
-        with open(topfilename, 'r') as f:
-            data = ''
-            for line in f:
-                if len(line.split())!=0 and line.split()[0]==ion:
-                    data+=ion+ ' '*(9-len(ion)) + '%s\n'%(nions+int(line.split()[1]))
-                    added=True
-                else:
-                    data+=line
-        if not added:
-            data += '%s'%ion + ' '*(9-len(ion)) + '%s\n'%nions
-        with open(topfilename, 'w') as f:
-            f.write(data)
+        add_ions(
+            inwhichfilename,
+            'CL',
+            nions,
+            outfilename,
+            topfilename)
 
 
 
 
-def add_ions(inwhichfilename, nions, vdwradius, outfilename, topfilename):
-    # <nions> number of NA and CL ions are added to increase ionic concentration    
+
+def increase_ionic_strength(inwhichfilename, nions, outfilename, topfilename):
+    # <nions> number of both NA and CL ions are added to increase ionic concentration
     
     if nions==0:
         warnings.warm('Zero ions are asked to add. Doing nothing.')
         return
         
-    os.system('cp %s/%s ./'%(this_path,martini_ionitp))
+    add_ions(
+        inwhichfilename,
+        'NA',
+        nions,
+        outfilename,
+        topfilename)
 
-    # add extra ions
-    os.system('gmx insert-molecules \
-        -f %s \
-        -nmol %s \
-        -ci %s/ion_NA.pdb \
-        -radius %s \
-        -o %s'%(inwhichfilename,nions,this_path,vdwradius,outfilename))
+    add_ions(
+        inwhichfilename,
+        'CL',
+        nions,
+        outfilename,
+        topfilename)
 
-    os.system('gmx insert-molecules \
-        -f %s \
-        -nmol %s \
-        -ci %s/ion_CL.pdb \
-        -radius %s \
-        -o %s'%(inwhichfilename,nions,this_path,vdwradius,outfilename))
-
-
-    ## update topfilename
-
-    # include martini_ionitp in topfilename if not already included
-    with open(topfilename, 'r') as f:
-        data = f.read()    
     
-    if not '#include "%s"'%martini_ionitp in data:
-        with open(topfilename, 'r') as f:
-            data = ''
-            for line in f:
-                if '#include "%s"'%martini_itp in line:
-                    data+=line+'#include "%s"\n'%martini_ionitp
-                else:
-                    data+=line
-        with open(topfilename, 'w') as f:
-            f.write(data)
-
-    # Append/Update number of ions in .top file
-    # adds the ion amount already present
-    
-    ion='NA+'
-    added=False
-    with open(topfilename, 'r') as f:
-        data = ''
-        for line in f:
-            if len(line.split())!=0 and line.split()[0]==ion:
-                data+=ion+ ' '*(9-len(ion)) + '%s\n'%(nions+int(line.split()[1]))
-                added=True
-            else:
-                data+=line
-    if not added:
-        data += '%s'%ion + ' '*(9-len(ion)) + '%s\n'%nions
-    with open(topfilename, 'w') as f:
-        f.write(data)
-
-    ion='CL-'
-    added=False
-    with open(topfilename, 'r') as f:
-        data = ''
-        for line in f:
-            if len(line.split())!=0 and line.split()[0]==ion:
-                data+=ion+ ' '*(9-len(ion)) + '%s\n'%(nions+int(line.split()[1]))
-                added=True
-            else:
-                data+=line
-    if not added:
-        data += '%s'%ion + ' '*(9-len(ion)) + '%s\n'%nions
-    with open(topfilename, 'w') as f:
-        f.write(data)
-
-
 
 
 
