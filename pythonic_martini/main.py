@@ -131,7 +131,7 @@ def _actual_atoms_added(filename, keyword):
 
 
 
-def _actual_molecules_added(filename, itpfilename):
+def _actual_molecules_added(filename, itpfilename, start_linenumber=0):
     """Calculate the number of molecules, defined in <itpfilename>, 
     in <filename> - usually gro or pdb file
     """
@@ -155,7 +155,7 @@ def _actual_molecules_added(filename, itpfilename):
     with open(filename, 'r') as f:
         lines = f.readlines()
     all_names = [] # e.g. PAM, ALA, GLU
-    for line in lines:
+    for line in lines[start_linenumber:]:
         if line.split()==[]:
             continue
         all_names += [line.split()[0].lstrip('0123456789')]
@@ -339,7 +339,7 @@ def create_simulation_box(Lx,Ly,Lz,nmol,molname,vdwradius,boxfilename, topfilena
     
     
     # Calculate actual nmol added
-    actual_nmol = _actual_molecules_added(boxfilename, '%s.itp'%molname)
+    actual_nmol = _actual_molecules_added(boxfilename, '%s.itp'%molname, start_linenumber=0)
 
     
     # read <molname>.top
@@ -368,6 +368,10 @@ def insert_molecules(inwhichfilename, molname, nmol, vdwradius, outfilename, top
     """Insert molecules given in <what_filename> in the existing simulation box <inwhich_filename>
     Creates <outfilename> and update existing <topfilename>
     """
+    
+    with open(inwhichfilename, 'r') as f:
+        num_lines = len(f.readlines())
+
     os.system('gmx insert-molecules \
             -f %s \
             -nmol %s \
@@ -377,7 +381,8 @@ def insert_molecules(inwhichfilename, molname, nmol, vdwradius, outfilename, top
 
     
     # Calculate actual nmol added
-    actual_nmol = _actual_molecules_added(outfilename, '%s.itp'%molname)
+    start_linenumber = num_lines-1
+    actual_nmol = _actual_molecules_added(outfilename, '%s.itp'%molname, start_linenumber)
 
 
     # Update .top file to 
