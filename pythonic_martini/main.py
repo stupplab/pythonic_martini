@@ -187,6 +187,12 @@ def make_aa_pdb(PA_seq, name):
     gen_PA(name)
     os.system('vmd -dispdev text -e gen_%s.pgn'%name)
 
+    # replace HSD back to HIS to be recognized by martinize.py
+    with open('%s_aa.pdb'%name, 'r') as f:
+        data = f.read().replace(' HSD ', ' HIS ')
+
+    with open('%s_aa.pdb'%name, 'w') as f:
+        f.write(data)
 
 
 
