@@ -10,7 +10,7 @@ out.log file, you find here, is only used for dumping the output of some command
 """
 
 
-
+import subprocess
 import numpy as np
 import os
 import json
@@ -213,13 +213,14 @@ def create_CGfiles_using_martinizepy(Ctermini_type, res_charge=[], name='pep', s
     """
 
     os.system('cp %s/%s ./'%(this_path,martini_itp))
-
-    os.system(f'python2 {this_path}/martinize.py -f {name}_aa.pdb \
+    
+    process = subprocess.run(f'python2 {this_path}/martinize.py -f {name}_aa.pdb \
         -o {name}.top -x {name}.pdb -name {name} -ff martini22 \
         -nt \
-        -ss {ss} ')
-
-
+        -ss {ss} ', shell=True)
+    process.check_returncode()
+    
+    
     # Collect lines defining atoms, breaks define start and end
     lines_atoms = []
     break1,break2 = None,None
@@ -335,12 +336,13 @@ def create_simulation_box(Lx,Ly,Lz,nmol,molname,vdwradius,boxfilename, topfilena
     .pdb file created by martinizepy contains one such molecule
     """
 
-    os.system('gmx insert-molecules \
-        -box %s %s %s \
-        -nmol %s \
-        -ci %s.pdb \
-        -radius %s \
-        -o %s &> out.log'%(Lx,Ly,Lz,nmol,molname,vdwradius,boxfilename))
+    process = subprocess.run(f'gmx insert-molecules \
+        -box {Lx} {Ly} {Lz} \
+        -nmol {nmol} \
+        -ci {molname}.pdb \
+        -radius {vdwradius} \
+        -o {boxfilename} &> out.log', shell=True)
+    process.check_returncode()
 
     
     
@@ -378,12 +380,13 @@ def insert_molecules(inwhichfilename, molname, nmol, vdwradius, outfilename, top
     with open(inwhichfilename, 'r') as f:
         num_lines = len(f.readlines())
 
-    os.system('gmx insert-molecules \
-            -f %s \
-            -nmol %s \
-            -ci %s.pdb \
-            -radius %s \
-            -o %s &> out.log'%(inwhichfilename,nmol,molname,vdwradius,outfilename))
+    process = subprocess.run(f'gmx insert-molecules \
+            -f {inwhichfilename} \
+            -nmol {nmol} \
+            -ci {molname}.pdb \
+            -radius {vdwradius} \
+            -o {outfilename} &> out.log', shell=True)
+    process.check_returncode()
 
     
     # Calculate actual nmol added
@@ -423,12 +426,13 @@ def insert_water(inwhichfilename, volume, vdwradius, outfilename, topfilename):
     num_water = int( 1000 *volume / (1.66*72) )
     molname = 'W'
 
-    os.system('gmx insert-molecules \
-            -f %s \
-            -nmol %s \
-            -ci %s/W.pdb \
-            -radius %s \
-            -o %s &> out.log'%(inwhichfilename,num_water,this_path,vdwradius,outfilename))
+    process = subprocess.run(f'gmx insert-molecules \
+            -f {inwhichfilename} \
+            -nmol {num_water} \
+            -ci {this_path}/W.pdb \
+            -radius {vdwradius} \
+            -o {outfilename} &> out.log', shell=True)
+    process.check_returncode()
 
     
     # Actual W atoms added
@@ -462,10 +466,11 @@ def solvate(inwhichfilename, vdwradius, topfilename, outfilename):
     """
 
     water = 'water-12.5'
-    os.system('gmx solvate \
-        -cp %s \
-        -cs %s/%s.gro \
-        -radius %s -o %s &> out.log'%(inwhichfilename,this_path,water,vdwradius,outfilename))
+    process = subprocess.run(f'gmx solvate \
+        -cp {inwhichfilename} \
+        -cs {this_path}/{water}.gro \
+        -radius {vdwradius} -o {outfilename} &> out.log')
+    process.check_returncode()
 
     
     # Actual W atoms added
@@ -680,26 +685,29 @@ def increase_ionic_strength(inwhichfilename, nions, outfilename, topfilename):
 
 def minimization(mdpfilename, topfilename, grofilename, tprfilename):
     # Minimization
-    os.system('gmx grompp \
-        -f %s \
-        -p %s \
-        -c %s \
-        -o %s -maxwarn 1'%(mdpfilename,topfilename,grofilename,tprfilename))
-    
+    process = subprocess.run(f'gmx grompp \
+        -f {mdpfilename} \
+        -p {topfilename} \
+        -c {grofilename} \
+        -o {tprfilename} -maxwarn 1', shell=True)
+    process.check_returncode()
+
     tprname = os.path.basename(tprfilename).replace('.tpr','')
-    os.system('gmx mdrun \
-        -deffnm %s -v'%tprname)
+    process = subprocess.run('gmx mdrun \
+        -deffnm %s -v'%tprname, shell=True)
+    process.check_returncode()    
 
     
 
 def prepare_eq_tpr(mdpfilename, topfilename, grofilename, tprfilename):
     # create .tpr for mdrun
     
-    os.system('gmx grompp \
-        -f %s \
-        -p %s \
-        -c %s \
-        -o %s -maxwarn 1'%(mdpfilename,topfilename,grofilename,tprfilename))
+    process = subprocess.run(f'gmx grompp \
+        -f {mdpfilename} \
+        -p {topfilename} \
+        -c {grofilename} \
+        -o {tprfilename} -maxwarn 1', shell=True)
+    process.check_returncode()    
 
 
 
@@ -709,12 +717,14 @@ def equilibration(tprfilename, mpi=False):
     tprname = os.path.basename(tprfilename).replace('.tpr','')
     ## Also prepare tpr
     if not mpi:
-        os.system('gmx mdrun \
-            -deffnm %s -v -cpt 30'%tprname)
-    else:
-        os.system('mpirun -np 1 gmx_mpi mdrun \
-            -deffnm %s -v'%tprname)
+        process = subprocess.run(f'gmx mdrun \
+            -deffnm %s -v -cpt 30'%tprname, shell=True)
+        process.check_returncode()
 
+    else:
+        process = subprocess.run(f'mpirun -np 1 gmx_mpi mdrun \
+            -deffnm %s -v'%tprname, shell=True)
+        process.check_returncode()
 
 
 
