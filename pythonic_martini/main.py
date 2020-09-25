@@ -197,7 +197,7 @@ def make_aa_pdb(PA_seq, name):
 
 
 
-def create_CGfiles_using_martinizepy(Ctermini_type, res_charge=[], name='pep'):
+def create_CGfiles_using_martinizepy(Ctermini_type, res_charge=[], name='pep', ss='C'*20):
     """ Run martinize.py to create <name>.top, <name>.pdb, <name>.itp files. 
     Ctermini_type: NH2 vs OH decide amide vs carboxylate (charged) termini
     Modifies .itp to set <res_charge> as asked.
@@ -214,10 +214,10 @@ def create_CGfiles_using_martinizepy(Ctermini_type, res_charge=[], name='pep'):
 
     os.system('cp %s/%s ./'%(this_path,martini_itp))
 
-    os.system('python2 %s/martinize.py -f %s_aa.pdb \
-        -o %s.top -x %s.pdb -name %s -ff martini22 \
+    os.system(f'python2 {this_path}/martinize.py -f {name}_aa.pdb \
+        -o {name}.top -x {name}.pdb -name {name} -ff martini22 \
         -nt \
-        -ss CCCCCCCCCCCC '%(this_path,name,name,name,name))
+        -ss {ss} ')
 
 
     # Collect lines defining atoms, breaks define start and end
