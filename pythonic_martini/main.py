@@ -60,7 +60,7 @@ def gen_PA(name):
 
 
 def generic_to_specific_PA(PA_seq, name):
-    """Write up a random PA sequence : <name>.pdb
+    """Write up a specific PA sequence PA_seq : <name>_specific.pdb
     Use the amount of alkyl chain asked for. Currently the maximum is C16.
     Exchange A,B,C... in PA_generic.pdb to valid residues
     """
