@@ -93,12 +93,16 @@ def generic_to_specific_PA(PA_seq, name):
 
     letters = ['A','B','C','D','E','F','G','H','I','J','K','L',
                'M','N','O','P','Q','R','S','T','U','V','W','X',
-               'Y','Z'] # generic residue name in PA_generic.pdb
+               'Y','Z'] + [
+              'A','B','C','D','E','F','G','H','I','J','K','L',
+               'M','N','O','P','Q','R','S','T','U','V','W','X',
+               'Y','Z']
+               # generic residue name in PA_generic.pdb
     
     with open('%s/PA_generic.pdb'%this_path, 'r') as fin:
         data = ''
         for line in fin:
-            if 3*letters[num_res] in line:
+            if (3*letters[num_res] in line) or (letters[num_res]+'ZZ' in line):
                 data = data +'END'
                 break
             if 'PAM' in line:
