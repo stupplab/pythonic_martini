@@ -603,6 +603,7 @@ def neutralize_system(inwhichfilename, molname, outfilename, topfilename):
     """
     # neutralize the <molname> using the charge from <molname>.itp and update <topfilename>
     Replace W molecues in <inwhichfilename> and updates topfilename
+    Add a CL and NA for every +ive and -ive charge found
 
     Old script that replaces water with ions 
     but requires command line input to choose the continuous solvent group.
