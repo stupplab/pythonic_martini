@@ -78,41 +78,42 @@ def generic_to_specific_PA(PA_seq, name):
 
     num_res = len(pep_seq)
 
-    
+
     res_dict = {'A':"ALA",'C':"CYS",'D':"ASP",'E':"GLU",'F':"PHE", 
                 'G':"GLY",'H':"HIS",'I':"ILE",'K':"LYS",'L':"LEU", 
                 'M':"MET",'N':"ASN",'P':"PRO",'Q':"GLN",'R':"ARG", 
                 'S':"SER",'T':"THR",'V':"VAL",'W':"TRP",'Y':"TYR"}
 
-    # residues = ['ALA','DAL','ARG','ASN','ASP','CYS',
-    #             'GLN','GLU','DGL','GLY','HSD','HSE',
-    #             'HSP','DHD','DHE','DHP','ILE','LEU',
-    #             'LYS','DLY','MET','PHE','PRO','SER',
-    #             'DSE','THR','TRP','TYR','VAL','DVA',
-    #             'PAM','ALAD']
 
-    letters = ['A','B','C','D','E','F','G','H','I','J','K','L',
-               'M','N','O','P','Q','R','S','T','U','V','W','X',
-               'Y','Z'] + [
-              'A','B','C','D','E','F','G','H','I','J','K','L',
-               'M','N','O','P','Q','R','S','T','U','V','W','X',
-               'Y','Z']
-               # generic residue name in PA_generic.pdb
+    # generic residue name in PA_generic.pdb
+    generic_residues = ['AAA','BBB','CCC','DDD','EEE','FFF','GGG','HHH','III','JJJ',
+                        'KKK','LLL','MMM','NNN','OOO','PPP','QQQ','RRR','SSS','TTT',
+                        'UUU','VVV','WWW','XXX','YYY','ZZZ'] + \
+                       ['AZZ','BZZ','CZZ','DZZ','EZZ','FZZ','GZZ','HZZ','IZZ','JZZ',
+                        'KZZ','LZZ','MZZ','NZZ','OZZ','PZZ','QZZ','RZZ','SZZ','TZZ',
+                       ] 
+               
     
-    with open('%s/PA_generic.pdb'%this_path, 'r') as fin:
-        data = ''
-        for line in fin:
-            if (3*letters[num_res] in line) or (letters[num_res]+'ZZ' in line):
-                data = data +'END'
+    with open('%s/PA_generic.pdb'%this_path, 'r') as f:
+        lines = f.readlines()
+
+    
+    data = ''
+    for line in lines:
+        if 'PAM' in line:
+            if int(line.split()[2][1:]) > num_alkylC:
+                continue
+        
+        if generic_residues[num_res] in line:
+            data = data +'END'
+            break
+        
+        for i in range(num_res):
+            if generic_residues[i] in line:
+                line = line.replace(generic_residues[i], res_dict[pep_seq[i]])
                 break
-            if 'PAM' in line:
-                if int(line.split()[2][1:]) > num_alkylC:
-                    continue
-            for i in range(num_res):
-                if 3*letters[i] in line:
-                    line = line.replace(3*letters[i], res_dict[pep_seq[i]])
-                    break
-            data = data + line
+
+        data = data + line
 
     with open('%s_specific.pdb'%name, 'w') as fout:
         fout.write(data)
@@ -467,13 +468,15 @@ def insert_water(inwhichfilename, volume, vdwradius, outfilename, topfilename):
 
 def solvate(inwhichfilename, vdwradius, topfilename, outfilename):
     """Add water to the simulation box using a premade gro file - water-12.5.gro
+    Faster than insert_water but may not enter all the water molecules. 
+    Use for large boxes.
     """
-
+    
     water = 'water-12.5'
     process = subprocess.run(f'gmx solvate \
         -cp {inwhichfilename} \
         -cs {this_path}/{water}.gro \
-        -radius {vdwradius} -o {outfilename} &> out.log')
+        -radius {vdwradius} -o {outfilename} &> out.log', shell=True)
     process.check_returncode()
 
     
