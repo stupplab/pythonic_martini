@@ -42,8 +42,8 @@ main.make_aa_pdb(pep_seq, name='pep')
 
 ## Create coarse-grained version of PA and pep molecules using the <name>_aa.pdb
 ## This generate <name>.itp, <name>.top and <name>.pdb files
-main.create_CGfiles_using_martinizepy(Ctermini_type, residuecharge_PA, name='PA')
-main.create_CGfiles_using_martinizepy(Ctermini_type, residuecharge_pep, name='pep')
+main.create_CGfiles_using_martinizepy(Ctermini_type, residuecharge_PA, name='PA', ss='CCCCCCCCCC')
+main.create_CGfiles_using_martinizepy(Ctermini_type, residuecharge_pep, name='pep', ss='CCCCCCCCCC')
 
 
 ## Create a simulation box with desired number of PA molecules
