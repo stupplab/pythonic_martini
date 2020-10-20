@@ -15,6 +15,7 @@ import numpy as np
 import os
 import json
 import warnings
+from .utils import *
 
 
 this_path = os.path.dirname(os.path.abspath(__file__))
@@ -26,97 +27,6 @@ amino_acid_1to3_lettercode = {'A':"ALA",'C':"CYS",'D':"ASP",'E':"GLU",'F':"PHE",
                 'G':"GLY",'H':"HIS",'I':"ILE",'K':"LYS",'L':"LEU", 
                 'M':"MET",'N':"ASN",'P':"PRO",'Q':"GLN",'R':"ARG", 
                 'S':"SER",'T':"THR",'V':"VAL",'W':"TRP",'Y':"TYR"}
-
-
-
-def gen_PA(name):
-    # Write a gen_PA.pgn file specific to PA_name
-
-    PA_name = '%s_specific'%name
-
-    data = [
-    'package require psfgen',
-    'psfcontext reset',
-    'topology %s/top_all36_prot_forPAs.rtf'%this_path,
-    'pdbalias residue HIS HSD',
-    'segment P001 {',
-    'pdb %s.pdb'%PA_name,
-    'first none',
-    '#last CT2',
-    'auto angles dihedrals',
-    '}',
-    'coordpdb %s.pdb P001'%PA_name,
-    '#last CTER',
-    'regenerate angles dihedrals',
-    'guesscoord',
-    'writepdb %s_aa.pdb'%name,
-    'exit'
-    ]
-
-    f = open('gen_%s.pgn'%name, 'wt')
-    f.write('\n'.join(data))
-    f.close
-
-
-
-def generic_to_specific_PA(PA_seq, name):
-    """Write up a specific PA sequence PA_seq : <name>_specific.pdb
-    Use the amount of alkyl chain asked for. Currently the maximum is C16.
-    Exchange A,B,C... in PA_generic.pdb to valid residues
-    """
-    
-    if (PA_seq[0] == 'C') and PA_seq[1].isdigit():
-        if PA_seq[2].isdigit():
-            num_alkylC = int(PA_seq[1:3])
-            pep_seq = PA_seq[3:]
-        else:
-            num_alkylC = int(PA_seq[1])
-            pep_seq = PA_seq[2:]
-    else: # no alkyl
-        pep_seq = PA_seq
-        num_alkylC = 0
-
-    num_res = len(pep_seq)
-
-
-    res_dict = {'A':"ALA",'C':"CYS",'D':"ASP",'E':"GLU",'F':"PHE", 
-                'G':"GLY",'H':"HIS",'I':"ILE",'K':"LYS",'L':"LEU", 
-                'M':"MET",'N':"ASN",'P':"PRO",'Q':"GLN",'R':"ARG", 
-                'S':"SER",'T':"THR",'V':"VAL",'W':"TRP",'Y':"TYR"}
-
-
-    # generic residue name in PA_generic.pdb
-    generic_residues = ['AAA','BBB','CCC','DDD','EEE','FFF','GGG','HHH','III','JJJ',
-                        'KKK','LLL','MMM','NNN','OOO','PPP','QQQ','RRR','SSS','TTT',
-                        'UUU','VVV','WWW','XXX','YYY','ZZZ'] + \
-                       ['AZZ','BZZ','CZZ','DZZ','EZZ','FZZ','GZZ','HZZ','IZZ','JZZ',
-                        'KZZ','LZZ','MZZ','NZZ','OZZ','PZZ','QZZ','RZZ','SZZ','TZZ',
-                       ] 
-               
-    
-    with open('%s/PA_generic.pdb'%this_path, 'r') as f:
-        lines = f.readlines()
-
-    
-    data = ''
-    for line in lines:
-        if 'PAM' in line:
-            if int(line.split()[2][1:]) > num_alkylC:
-                continue
-        
-        if generic_residues[num_res] in line:
-            data = data +'END'
-            break
-        
-        for i in range(num_res):
-            if generic_residues[i] in line:
-                line = line.replace(generic_residues[i], res_dict[pep_seq[i]])
-                break
-
-        data = data + line
-
-    with open('%s_specific.pdb'%name, 'w') as fout:
-        fout.write(data)
 
 
 
@@ -182,13 +92,106 @@ def _actual_molecules_added(filename, itpfilename, start_linenumber=0):
 
 
 
+def gen_PA(name):
+    # Write a gen_PA.pgn file specific to PA_name
 
-def make_aa_pdb(PA_seq, name):
-    """Make the all-atom pdb file <name>_aa.pdb for the PA_seq using vmd
+    PA_name = '%s_specific'%name
+
+    data = [
+    'package require psfgen',
+    'psfcontext reset',
+    'topology %s/top_all36_prot_forPAs.rtf'%this_path,
+    'pdbalias residue HIS HSD',
+    'segment P001 {',
+    'pdb %s.pdb'%PA_name,
+    'first none',
+    '#last CT2',
+    'auto angles dihedrals',
+    '}',
+    'coordpdb %s.pdb P001'%PA_name,
+    '#last CTER',
+    'regenerate angles dihedrals',
+    'guesscoord',
+    'writepdb %s_aa.pdb'%name,
+    'exit'
+    ]
+
+    f = open('gen_%s.pgn'%name, 'wt')
+    f.write('\n'.join(data))
+    f.close
+
+
+
+def generic_to_specific_PA(PA_seq, name):
+    """Write up a specific PA sequence PA_seq : <name>_specific.pdb
     PA_seq is in string format. Example: C12VVAAEE. 
     Digits are used only for the alkyl chain.
+    Use the amount of alkyl chain asked for. Currently the maximum is C16.
+    Exchange A,B,C... in PA_generic.pdb to valid residues
     """
-    generic_to_specific_PA(PA_seq.upper(), name)
+    
+    if (PA_seq[0] == 'C') and PA_seq[1].isdigit():
+        if PA_seq[2].isdigit():
+            num_alkylC = int(PA_seq[1:3])
+            pep_seq = PA_seq[3:]
+        else:
+            num_alkylC = int(PA_seq[1])
+            pep_seq = PA_seq[2:]
+    else: # no alkyl
+        pep_seq = PA_seq
+        num_alkylC = 0
+
+    num_res = len(pep_seq)
+
+
+    res_dict = {'A':"ALA",'C':"CYS",'D':"ASP",'E':"GLU",'F':"PHE", 
+                'G':"GLY",'H':"HIS",'I':"ILE",'K':"LYS",'L':"LEU", 
+                'M':"MET",'N':"ASN",'P':"PRO",'Q':"GLN",'R':"ARG", 
+                'S':"SER",'T':"THR",'V':"VAL",'W':"TRP",'Y':"TYR"}
+
+
+    # generic residue name in PA_generic.pdb
+    generic_residues = ['AAA','BBB','CCC','DDD','EEE','FFF','GGG','HHH','III','JJJ',
+                        'KKK','LLL','MMM','NNN','OOO','PPP','QQQ','RRR','SSS','TTT',
+                        'UUU','VVV','WWW','XXX','YYY','ZZZ'] + \
+                       ['AZZ','BZZ','CZZ','DZZ','EZZ','FZZ','GZZ','HZZ','IZZ','JZZ',
+                        'KZZ','LZZ','MZZ','NZZ','OZZ','PZZ','QZZ','RZZ','SZZ','TZZ',
+                       ] 
+               
+    
+    with open('%s/PA_generic.pdb'%this_path, 'r') as f:
+        lines = f.readlines()
+
+    
+    data = ''
+    for line in lines:
+        if 'PAM' in line:
+            if int(line.split()[2][1:]) > num_alkylC:
+                continue
+        
+        if generic_residues[num_res] in line:
+            data = data +'END'
+            break
+        
+        for i in range(num_res):
+            if generic_residues[i] in line:
+                line = line.replace(generic_residues[i], res_dict[pep_seq[i]])
+                break
+
+        data = data + line
+
+    with open('%s_specific.pdb'%name, 'w') as fout:
+        fout.write(data)
+
+
+
+
+
+def make_aa_pdb(name):
+    """Make the all-atom pdb file <name>_aa.pdb for the PA_seq using vmd
+    
+    """
+    #generic_to_specific_PA(PA_seq.upper(), name)
     gen_PA(name)
     os.system('vmd -dispdev text -e gen_%s.pgn'%name)
 

@@ -36,8 +36,10 @@ os.chdir(path)
 
 ## Make the all-atom <name>_aa.pdb of PA and pep using vmd, the generic PA backbone structure used is 
 ## already created. See PA_generic.pdb
-main.make_aa_pdb(PA_seq, name='PA')
-main.make_aa_pdb(pep_seq, name='pep')
+main.generic_to_specific_PA(PA_seq.upper(), name='PA')
+main.make_aa_pdb(name='PA')
+main.generic_to_specific_PA(pep_seq.upper(), name='pep')
+main.make_aa_pdb(name='pep')
 
 
 ## Create coarse-grained version of PA and pep molecules using the <name>_aa.pdb
