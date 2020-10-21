@@ -330,6 +330,36 @@ def create_CGfiles_using_martinizepy(Ctermini_type, res_charge=[], name='pep', s
         data_new += line
     
 
+    # Treat sidechain of PAM as backbone and rectify the angle in Backbone-sidechain
+    # For each PAM, collect the BB and SC1, then change the angle to 180
+    PAM_BB_SC1s = []
+    for i,line in enumerate(lines_atoms):
+        if ('PAM' in line) and ('BB' in line):
+            PAM_BB_SC1s += [ [int(line.split()[0]), int(line.split()[0])+1] ]
+    
+    lines = data_new.splitlines()
+    new_lines = []
+    start = False
+    for i,line in enumerate(lines):
+        if 'Backbone-sidechain angles' in line:
+            start = True
+            continue
+        if start:
+            words = line.split()
+            if words==[] or not words[0].isdigit():
+                start = False
+                break
+            for bb,sc in PAM_BB_SC1s:
+                args = [int(words[0]), int(words[1]), int(words[2])]
+                if (bb in args) and (sc in args):
+                    lines[i] = lines[i].replace(' '*(3-len(words[4]))+words[4], '180')
+                    break
+            
+    
+
+
+    # write the final itp
+    data_new = '\n'.join(lines)
     with open('%s.itp'%name, 'w') as f:
         f.write(data_new)
 
