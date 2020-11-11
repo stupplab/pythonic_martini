@@ -72,7 +72,7 @@ $ git push origin branchname
 ```
 The last command pushes the code to the branch `branchname` in the `origin`, which is already set to be the Github address of the this repository `pythonic_martini`. `branchname` is created if it doesn't already exists.
 
-You can make as make changes as you want using this process but these changes are still in the branch you created and not in the primary branch of this repository called `master`. When and if you think these changes should be incorporated in the master branch, create a **Pull request**. For this, go to the Github page of your branch and click Pull request. Fill up the details asked and submit. On the first time, command `git push origin branchname` also generates a link that you can just copy on your browser to access the pull request page. It may look something like `https://github.com/stupplab/pythonic_martini/pull/new/branchname`.
+You can make as make changes as you want using this process but these changes are still in the branch you created and not in the primary branch of this repository called `master`. You can keep using this modified version of the code for your personal use. When and if you think these changes should be incorporated in the master branch, create a **Pull request**. For this, go to the Github page of your branch and click Pull request. Fill up the details asked and submit. On the first time, command `git push origin branchname` also generates a link that you can just copy on your browser to access the pull request page. It may look something like `https://github.com/stupplab/pythonic_martini/pull/new/branchname`.
 
 The maintainer of the repository will now look at the pull request, resolve any conflicts and merge the code as required.
 
