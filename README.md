@@ -6,11 +6,11 @@ Python scripts for creating and simulating macromolecules using MARTINI / GROMAC
 
 
 ## Software prerequisites:
-- Python3 
+- Python3 (Tested on version 3.8)
 - Python2 (for martinize.py)
-- numpy
-- vmd     
-- GROMACS
+- numpy (Tested on version 1.17.4)
+- vmd  (Tested on version 1.9.4a43)
+- GROMACS (Tested on version 2020.2)
 
 (vmd and gromacs should be callable at the command line)
 
