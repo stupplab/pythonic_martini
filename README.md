@@ -83,12 +83,10 @@ The maintainer of the repository will now look at the pull request, resolve any 
 ### VMD - for MacOS/LINUX
 Part of pythonic_script that runs vmd, assumes that `vmd` is callable from the command line. Now vmd is callable from command line when VMD package is installed from the source in the system `PATH`. However, people usually install VMD as an app in the `Applications` directory. Follow the instructions below to create a callable vmd link.
 > Go to the directory of your VMD app's  `startup.command`, which is the actual executable that runs the VMD. If your app's name is `VMD 1.9.4a43-Catalina-Rev6`, then the directory should look like `/Applications/VMD 1.9.4a43-Catalina-Rev6.app/Contents/MacOS/startup.command`
-
 ```bash
 cd /Applications/VMD\ 1.9.4a43-Catalina-Rev6.app/Contents/MacOS/startup.command
 ```
 > Create a symbolic vmd link
-
 ```bash
 ln -s startup.command vmd
 ```
