@@ -12,7 +12,7 @@ Python scripts for creating and simulating macromolecules using MARTINI / GROMAC
 - vmd  (Tested on version 1.9.4a43)
 - GROMACS (Tested on version 2020.2)
 
-(vmd and gromacs should be callable at the command line)
+(vmd and gromacs should be callable at the command line. Look at the **Installation tips** for solutions to problems faced by people during installation)
 
 You can download the package and run the example script using the following commands. Running example_script will create the directory 'example', then prepare and run the PA-peptide coassembly simulation inside it.
     
@@ -77,4 +77,22 @@ to check if there a difference between the files of this branch in your workstat
 You can make as make changes as you want using this process but these changes are still in the branch you created and not in the primary branch of this repository called `master`. You can keep using this modified version of the code for your personal use. When and if you think these changes should be incorporated in the master branch, create a **Pull request**. For this, go to the Github page of your branch and click Pull request. Fill up the details asked and submit. On the first time, command `git push origin branchname` also generates a link that you can just copy on your browser to access the pull request page. It may look something like `https://github.com/stupplab/pythonic_martini/pull/new/branchname`.
 
 The maintainer of the repository will now look at the pull request, resolve any conflicts and merge the code as required.
+
+## Installation tips
+
+### VMD - for MacOS/LINUX
+Part of pythonic_script that runs vmd, assumes that `vmd` is callable from the command line. Now vmd is callable from command line when VMD package is installed from the source in the system `PATH`. However, people usually install VMD as an app in the `Applications` directory. Follow the instructions below to create a callable vmd link.
+> Go to the directory of your VMD app's  `startup.command`, which is the actual executable that runs the VMD. If your app's name is `VMD 1.9.4a43-Catalina-Rev6`, then the directory should look like `/Applications/VMD 1.9.4a43-Catalina-Rev6.app/Contents/MacOS/startup.command`
+
+```bash
+cd /Applications/VMD\ 1.9.4a43-Catalina-Rev6.app/Contents/MacOS/startup.command
+```
+> Create a symbolic vmd link
+
+```bash
+ln -s startup.command vmd
+```
+> Add `Applications/VMD\ 1.9.4a43-Catalina-Rev6.app/Contents/MacOS` to `PATH` in the configuration file of your shell. For example, for `bash` shell, open `.bash_profile` in the home directory. Add the line `export PATH="Applications/VMD\ 1.9.4a43-Catalina-Rev6.app/Contents/MacOS:$PATH`.
+
+This should make your `vmd` callable from the command line. (Remember to open a new terminal window to start calling `vmd`)
 
