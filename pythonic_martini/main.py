@@ -755,7 +755,7 @@ def prepare_eq_tpr(mdpfilename, topfilename, grofilename, tprfilename):
 
 def equilibration(tprfilename, mpi=False):
     ## Equilibration
-
+    
     tprname = os.path.basename(tprfilename).replace('.tpr','')
     ## Also prepare tpr
     if not mpi:
