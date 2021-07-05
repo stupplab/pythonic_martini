@@ -130,16 +130,25 @@ def generic_to_specific_PA(PA_seq, name):
     Exchange A,B,C... in PA_generic.pdb to valid residues
     """
     
-    if (PA_seq[0] == 'C') and PA_seq[1].isdigit():
-        if PA_seq[2].isdigit():
-            num_alkylC = int(PA_seq[1:3])
-            pep_seq = PA_seq[3:]
+    if type(PA_seq) == type([]):
+        if PA_seq[0]=='C16':
+            num_alkylC = 16
+            pep_seq = PA_seq[1:]
         else:
-            num_alkylC = int(PA_seq[1])
-            pep_seq = PA_seq[2:]
-    else: # no alkyl
-        pep_seq = PA_seq
-        num_alkylC = 0
+            num_alkylC = 0
+            pep_seq = PA_seq[0:]
+    else:
+        if (PA_seq[0] == 'C') and PA_seq[1].isdigit():
+            if PA_seq[2].isdigit():
+                num_alkylC = int(PA_seq[1:3])
+                pep_seq = PA_seq[3:]
+            else:
+                num_alkylC = int(PA_seq[1])
+                pep_seq = PA_seq[2:]
+        else: # no alkyl
+            pep_seq = PA_seq
+            num_alkylC = 0
+
 
     num_res = len(pep_seq)
 
@@ -147,7 +156,11 @@ def generic_to_specific_PA(PA_seq, name):
     res_dict = {'A':"ALA",'C':"CYS",'D':"ASP",'E':"GLU",'F':"PHE", 
                 'G':"GLY",'H':"HIS",'I':"ILE",'K':"LYS",'L':"LEU", 
                 'M':"MET",'N':"ASN",'P':"PRO",'Q':"GLN",'R':"ARG", 
-                'S':"SER",'T':"THR",'V':"VAL",'W':"TRP",'Y':"TYR"}
+                'S':"SER",'T':"THR",'V':"VAL",'W':"TRP",'Y':"TYR",
+
+                'PSS': 'PSS',
+                'PSN': 'PSN',
+                'C16': 'PAM'}
 
 
     # generic residue name in PA_generic.pdb

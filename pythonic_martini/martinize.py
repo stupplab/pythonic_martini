@@ -557,7 +557,8 @@ rnares1 = " rA rC rG rU" #
 # Amino acid nucleic acid codes:                                                                                 
 # The naming (AA and '3') is not strictly correct when adding DNA/RNA, but we keep it like this for consistincy./
 #PAM - Palmitic acid, LYR - Reverse lysine linker, PMO - Palmitoleic acid
-AA3     = spl("TRP TYR PHE HIS HIH ARG LYS CYS ASP GLU ILE LEU MET ASN PRO HYP GLN SER THR VAL ALA GLY FMO PAM LYR PMO"+dnares3+rnares3) #@#
+#PSS - Poly styrene sulfonate
+AA3     = spl("TRP TYR PHE HIS HIH ARG LYS CYS ASP GLU ILE LEU MET ASN PRO HYP GLN SER THR VAL ALA GLY FMO PAM LYR PMO PSS PSN"+dnares3+rnares3) #@#
 AA1     = spl("  W   Y   F   H   H   R   K   C   D   E   I   L   M   N   P   O   Q   S   T   V   A   G   X   Z   J   B"+dnares1+rnares1) #@#
 
 
@@ -640,6 +641,8 @@ class CoarseGrained:
         "VAL":  nsplit(bb,"CB CG1 CG2"),
         "TRP":  nsplit(bb,"CB CG CD2","CD1 HD1 NE1 HE1 CE2","CE3 HE3 CZ3 HZ3","CZ2 HZ2 CH2 HH2"),
         "FMO":  nsplit("C12 CF1 OF1 CA OF2","C3 C4","C2 C1","C5 C13","C6 C11","C7 C8","C10 C9"),
+        "PSS":  nsplit(bb,"CB CC","CD CE","CF CG", "S O1 O2 O3"),
+        "PSN":  nsplit(bb,"CB CC","CD CE","CF CG", "S O1 O2 O3"),
         "PAM":  nsplit("C1 O1 C2 C3 C4","C5 C6 C7 C8","C9 C10 C11 C12","C13 C14 C15 C16"),
         "PMO":  nsplit("C1 O1 C2 C3 C4","C5 C6 C7 C8","C9 D1 C11 C12","C13 C14 C15 C16"),
         "LYR":  nsplit(bb,"C3 C4 C5","C6 N2 C7 O3","C8 C9 C10","C11 C12 C13 C14","C15 C16 C17 C18"),
@@ -948,6 +951,8 @@ class martini22:
         self.bbtyp    = {                                                                   #                 #@#
                     "ALA": spl(" C5    N0    C5    N0    N0    N0    N0    P4    P4"), # ALA specific    #@#
                     #"FMO": spl(" P5    P5    P5    P5    P5    P5    P5    P5    P5"), # FMO specific    #@#
+                    "PSS": spl(" SCY   SCY   SCY   SCY   SCY   SCY   SCY  SCY    SCY"), # PSS specific    #@#
+                    "PSN": spl(" SCY   SCY   SCY   SCY   SCY   SCY   SCY  SCY    SCY"), # PSS specific    #@#
                     "PAM": spl(" P1    Na    P1    Na    Na    Na    Na    P1    P1"), # PAM specific    #@#
                     "PMO": spl(" P1    Na    P1    Na    Na    Na    Na    P1    P1"), # PMO specific    #@#
                     "LYR": spl(" P1    Na    P1    Na    Na    Na    Na    P1    P5"), # LYR specific    #@#
@@ -958,11 +963,15 @@ class martini22:
         self.bbldef   =             (.365, .350, .310, .310, .310, .310, .350, .350, .350)  # BB bond lengths #@#
         self.bbkb     =             (1250, 1250, None, None, None, None, 1250, 1250, 1250)  # BB bond kB      #@#
         self.bbltyp   = {
+                "PSS":              (0.575, 0.59, 0.63, 0.63, 0.63, 0.63, 0.59, 0.59, 0.59), # Copied from PAM
+                "PSN":              (0.575, 0.59, 0.63, 0.63, 0.63, 0.63, 0.59, 0.59, 0.59), # Copied from PAM
                 "PAM":              (0.575, 0.59, 0.63, 0.63, 0.63, 0.63, 0.59, 0.59, 0.59), # Dist to average 0.47 with the others
                 "PMO":              (0.575, 0.59, 0.63, 0.63, 0.63, 0.63, 0.59, 0.59, 0.59), # Dist to average 0.47 with the others
                 "LYR":              (0.365, 0.59, 0.59, 0.59, 0.59, 0.59, 0.59, 0.59, 0.365)  # 
                 }                                                                  #                 #@#
         self.bbkbtyp  = {
+                "PSS":              (1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250), # Copied from PAM
+                "PSN":              (1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250), # Copied from PAM
                 "PAM":              (1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250),
                 "PMO":              (1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250),
                 "LYR":              (1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250)
@@ -1014,6 +1023,8 @@ class martini22:
             #                               BB-SC          SC-SC                                        BB-SC-SC  SC-SC-SC
             "TRP": [spl("SC4 SNd SC5 SC5"),[(0.300,5000)]+[(0.270,None) for i in range(5)],        [(210,50),(90,50),(90,50)], [(0,50),(0,200)]],
             "FMO": [spl("SC4 SC4 SC4 SC4 SC4 SC4"),   [(0.370,5000),(0.365,9000),(0.21,None),(0.19,None),(0.21,None)],[(130,200),(130,200),(153,100),(130,100)], [(0,50),(300,0.21),(300,0.21)]],
+            "PSS": [spl("STY STY STY Qa"),       [(0.270,8000),(0.270,8000),(0.270,8000),(0.270,8000),(0.270,8000),(0.270,8000)],     [(150,50),(150,50)]],
+            "PSN": [spl("STY STY STY P1"),       [(0.270,8000),(0.270,8000),(0.270,8000),(0.270,8000),(0.270,8000),(0.270,8000)],     [(150,50),(150,50)]],
             "PAM": [spl("C1 C1 C1"),       [(0.470,1250),(0.470,1250),(0.470,1250)],               [(180,25),(180,25)]],
             "PMO": [spl("C1 C3 C1"),       [(0.470,1250),(0.470,1250),(0.470,1250)],               [(180,25),(180,25)]],
             "LYR": [spl("C1 P5 C2 C1 C1"),       [(0.330,1250),(0.590,1250),(0.590,1250),(0.590,1250),(0.590,1250)],               [(180,25),(180,25),(180,25),(180,25),(180,25)]],
@@ -1058,6 +1069,8 @@ class martini22:
         #RES       BONDS                                   ANGLES             DIHEDRALS              V-SITE
         "TRP":     [[(0,1),(1,2),(1,3),(2,3),(2,4),(3,4)], [(0,1,2),(0,1,3)], [(0,2,3,1),(1,2,4,3)]],  
         "FMO":     [[(0,3),(0,4),(1,3),(3,4),(4,5)], [(1,3,4),(3,4,5),(1,3,0),(5,4,0)],[(1,3,4,5),(2,1,3,4),(6,5,4,3) ]],  
+        "PSS":     [[(0,1),(1,2),(1,3),(2,3),(2,4),(3,4)],            [(0,1,2),(0,1,3)]],
+        "PSN":     [[(0,1),(1,2),(1,3),(2,3),(2,4),(3,4)],            [(0,1,2),(0,1,3)]],
         "PAM":     [[(0,1),(1,2),(2,3)],                   [(0,1,2),(1,2,3)]],
         "PMO":     [[(0,1),(1,2),(2,3)],                   [(0,1,2),(1,2,3)]],
         "LYR":     [[(0,1),(1,2),(2,3),(3,4),(4,5)],       [(0,1,2),(1,2,3),(2,3,4),(3,4,5)]],
