@@ -424,7 +424,7 @@ def create_simulation_box(Lx,Ly,Lz,nmol,molname,vdwradius,boxfilename, topfilena
 
 
 
-def insert_molecules(inwhichfilename, molname, nmol, vdwradius, outfilename, topfilename, add_itp=True):
+def insert_molecules(inwhichfilename, molname, nmol, vdwradius, outfilename, topfilename, add_itp=True, numtry=10):
     """Insert molecules given in <what_filename> in the existing simulation box <inwhich_filename>
     Creates <outfilename> and update existing <topfilename>
     """
@@ -437,7 +437,7 @@ def insert_molecules(inwhichfilename, molname, nmol, vdwradius, outfilename, top
             -nmol {nmol} \
             -ci {molname}.pdb \
             -radius {vdwradius} \
-            -o {outfilename} &> out.log', shell=True)
+            -o {outfilename} -try {numtry} &> out.log', shell=True)
     process.check_returncode()
 
     
