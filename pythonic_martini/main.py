@@ -122,7 +122,7 @@ def gen_PA(name):
 
 
 
-def generic_to_specific_PA(PA_seq, name):
+def generic_to_specific_PA(PA_seq, name, generic_file=None):
     """Write up a specific PA sequence PA_seq : <name>_specific.pdb
     PA_seq is in string format. Example: C12VVAAEE. 
     Digits are used only for the alkyl chain.
@@ -133,6 +133,9 @@ def generic_to_specific_PA(PA_seq, name):
     if type(PA_seq) == type([]):
         if PA_seq[0]=='C16':
             num_alkylC = 16
+            pep_seq = PA_seq[1:]
+        elif PA_seq[0]=='SPI':
+            num_alkylC = 20
             pep_seq = PA_seq[1:]
         else:
             num_alkylC = 0
@@ -160,7 +163,8 @@ def generic_to_specific_PA(PA_seq, name):
 
                 'PSS': 'PSS',
                 'PSN': 'PSN',
-                'C16': 'PAM'}
+                'C16': 'PAM',
+                'SPI': 'SPI'}
 
 
     # generic residue name in PA_generic.pdb
@@ -171,9 +175,12 @@ def generic_to_specific_PA(PA_seq, name):
                         'KZZ','LZZ','MZZ','NZZ','OZZ','PZZ','QZZ','RZZ','SZZ','TZZ',
                        ] 
                
-    
-    with open('%s/PA_generic.pdb'%this_path, 'r') as f:
-        lines = f.readlines()
+    if type(generic_file)!=type(None):
+        with open(generic_file, 'r') as f:
+            lines = f.readlines()
+    else:
+        with open('%s/PA_generic.pdb'%this_path, 'r') as f:
+            lines = f.readlines()
 
     
     data = ''
