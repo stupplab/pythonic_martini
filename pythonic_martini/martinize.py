@@ -556,10 +556,10 @@ rnares1 = " rA rC rG rU" #
 
 # Amino acid nucleic acid codes:                                                                                 
 # The naming (AA and '3') is not strictly correct when adding DNA/RNA, but we keep it like this for consistincy./
-#PAM - Palmitic acid, LYR - Reverse lysine linker, PMO - Palmitoleic acid
+#PAM - Palmitic acid, LYR - Reverse lysine linker, PMO - Palmitoleic acid, SPI - spider molecule
 #PSS - Poly styrene sulfonate
-AA3     = spl("TRP TYR PHE HIS HIH ARG LYS CYS ASP GLU ILE LEU MET ASN PRO HYP GLN SER THR VAL ALA GLY FMO PAM LYR PMO PSS PSN"+dnares3+rnares3) #@#
-AA1     = spl("  W   Y   F   H   H   R   K   C   D   E   I   L   M   N   P   O   Q   S   T   V   A   G   X   Z   J   B"+dnares1+rnares1) #@#
+AA3     = spl("TRP TYR PHE HIS HIH ARG LYS CYS ASP GLU ILE LEU MET ASN PRO HYP GLN SER THR VAL ALA GLY FMO PAM LYR PMO PSS PSN SPI"+dnares3+rnares3) #@#
+AA1     = spl("  W   Y   F   H   H   R   K   C   D   E   I   L   M   N   P   O   Q   S   T   V   A   G   X   Z   J   B  U"+dnares1+rnares1) #@#
 
 
 # Dictionaries for conversion from one letter code to three letter code v.v.                         
@@ -644,6 +644,7 @@ class CoarseGrained:
         "PSS":  nsplit(bb,"CB CC","CD CE","CF CG", "S O1 O2 O3"),
         "PSN":  nsplit(bb,"CB CC","CD CE","CF CG", "S O1 O2 O3"),
         "PAM":  nsplit("C1 O1 C2 C3 C4","C5 C6 C7 C8","C9 C10 C11 C12","C13 C14 C15 C16"),
+        "SPI":  nsplit("C1 O1 C19 C8","O3 C5 C20","C3 O5 C6","C4 O4 C7","C2 O2 C9","F1 F2 F3 C14","F4 F5 F6 C15","F7 F8 F9 C13","F10 F11 F12 C18","F13 F14 F15 C17","F16 F17 F18 C16","F19 F20 F21 C10","F22 F23 F24 C11","F25 F26 F27 C12"),
         "PMO":  nsplit("C1 O1 C2 C3 C4","C5 C6 C7 C8","C9 D1 C11 C12","C13 C14 C15 C16"),
         "LYR":  nsplit(bb,"C3 C4 C5","C6 N2 C7 O3","C8 C9 C10","C11 C12 C13 C14","C15 C16 C17 C18"),
         "TYR":  nsplit(bb,"CB CG CD1 HD1","CD2 HD2 CE2 HE2","CE1 HE1 CZ OH HH"),
@@ -954,6 +955,7 @@ class martini22:
                     "PSS": spl(" SCY   SCY   SCY   SCY   SCY   SCY   SCY  SCY    SCY"), # PSS specific    #@#
                     "PSN": spl(" SCY   SCY   SCY   SCY   SCY   SCY   SCY  SCY    SCY"), # PSS specific    #@#
                     "PAM": spl(" P1    Na    P1    Na    Na    Na    Na    P1    P1"), # PAM specific    #@#
+                    "SPI": spl(" P1    Na    P1    Na    Na    Na    Na    P1    P1"), # PAM specific    #@#
                     "PMO": spl(" P1    Na    P1    Na    Na    Na    Na    P1    P1"), # PMO specific    #@#
                     "LYR": spl(" P1    Na    P1    Na    Na    Na    Na    P1    P5"), # LYR specific    #@#
                     "PRO": spl(" C5    N0    C5    N0    Na    N0    N0    P4    P4"), # PRO specific    #@#
@@ -966,6 +968,7 @@ class martini22:
                 "PSS":              (0.575, 0.59, 0.63, 0.63, 0.63, 0.63, 0.59, 0.59, 0.59), # Copied from PAM
                 "PSN":              (0.575, 0.59, 0.63, 0.63, 0.63, 0.63, 0.59, 0.59, 0.59), # Copied from PAM
                 "PAM":              (0.575, 0.59, 0.63, 0.63, 0.63, 0.63, 0.59, 0.59, 0.59), # Dist to average 0.47 with the others
+                "SPI":              (0.575, 0.59, 0.63, 0.63, 0.63, 0.63, 0.59, 0.59, 0.59), # Dist to average 0.47 with the others
                 "PMO":              (0.575, 0.59, 0.63, 0.63, 0.63, 0.63, 0.59, 0.59, 0.59), # Dist to average 0.47 with the others
                 "LYR":              (0.365, 0.59, 0.59, 0.59, 0.59, 0.59, 0.59, 0.59, 0.365)  # 
                 }                                                                  #                 #@#
@@ -973,6 +976,7 @@ class martini22:
                 "PSS":              (1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250), # Copied from PAM
                 "PSN":              (1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250), # Copied from PAM
                 "PAM":              (1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250),
+                "SPI":              (1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250),
                 "PMO":              (1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250),
                 "LYR":              (1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250)
                 }                                                                  #                 #@#
@@ -1026,6 +1030,7 @@ class martini22:
             "PSS": [spl("STY STY STY Qa"),       [(0.270,8000),(0.270,8000),(0.270,8000),(0.270,8000),(0.270,8000),(0.270,8000)],     [(150,50),(150,50)]],
             "PSN": [spl("STY STY STY P1"),       [(0.270,8000),(0.270,8000),(0.270,8000),(0.270,8000),(0.270,8000),(0.270,8000)],     [(150,50),(150,50)]],
             "PAM": [spl("C1 C1 C1"),       [(0.470,1250),(0.470,1250),(0.470,1250)],               [(180,25),(180,25)]],
+            "SPI": [spl("C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1 C1"),       [(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250),(0.470,1250)],               [(180,25),(180,25)]],
             "PMO": [spl("C1 C3 C1"),       [(0.470,1250),(0.470,1250),(0.470,1250)],               [(180,25),(180,25)]],
             "LYR": [spl("C1 P5 C2 C1 C1"),       [(0.330,1250),(0.590,1250),(0.590,1250),(0.590,1250),(0.590,1250)],               [(180,25),(180,25),(180,25),(180,25),(180,25)]],
             "TYR": [spl("SC4 SC4 SP1"),    [(0.320,5000), (0.270,None), (0.270,None),(0.270,None)],[(150,50),(150,50)],        [(0,50)]],
@@ -1072,6 +1077,7 @@ class martini22:
         "PSS":     [[(0,1),(1,2),(1,3),(2,3),(2,4),(3,4)],            [(0,1,2),(0,1,3)]],
         "PSN":     [[(0,1),(1,2),(1,3),(2,3),(2,4),(3,4)],            [(0,1,2),(0,1,3)]],
         "PAM":     [[(0,1),(1,2),(2,3)],                   [(0,1,2),(1,2,3)]],
+        "SPI":     [[(0,1),(1,2),(1,3),(1,4),(2,11),(2,12),(2,13),(3,5),(3,6),(3,7),(4,8),(4,9),(4,10)],                   [(0,1,2),(0,1,3),(0,1,4),(1,2,11),(1,2,12),(1,2,13),(1,3,5),(1,3,6),(1,3,7),(1,4,8),(1,4,9),(1,4,10)]],
         "PMO":     [[(0,1),(1,2),(2,3)],                   [(0,1,2),(1,2,3)]],
         "LYR":     [[(0,1),(1,2),(2,3),(3,4),(4,5)],       [(0,1,2),(1,2,3),(2,3,4),(3,4,5)]],
         "TYR":     [[(0,1),(1,2),(1,3),(2,3)],             [(0,1,2),(0,1,3)], [(0,2,3,1)]], 
@@ -2633,7 +2639,6 @@ class Topology:
             for atom in residue:
                 if atom[0] == "CA" or atom[0] == "C1": #@ "C1" recognition for PAM
                     positionCa.append(atom[4:])
-
         
         # Residue numbers for this moleculetype topology
         resid = range(startResi,startResi+len(self.sequence))     
