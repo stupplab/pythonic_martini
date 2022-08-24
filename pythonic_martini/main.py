@@ -568,7 +568,7 @@ def add_ions(inwhichfilename, ionname, nions, outfilename, topfilename):
     """
 
     if nions==0:
-        warnings.warm('Zero %s ions are asked to add. Doing nothing.'%ionname)
+        warnings.warn('Zero %s ions are asked to add. Doing nothing.'%ionname)
         return
 
     
