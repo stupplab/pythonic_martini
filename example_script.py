@@ -28,7 +28,7 @@ Lz                 = 4
 
 ################## Now the script that prepares and runs the simulation ##################
 ## Create a directory path for this example and go inside it
-path = './example'
+path = './simulation'
 if not os.path.exists(path):
     os.mkdir(path)
 os.chdir(path)
