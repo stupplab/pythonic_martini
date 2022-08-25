@@ -25,7 +25,10 @@ You can download the package and run the example script using the following comm
 If you want to run the example script from anywhere, i.e., import pythonic_martini from anywhere, install the package in you local python package directory by running
 
     python setup.py install --user
-
+Another installation method
+    
+    python setup.py sdist
+    pip install dist/pythonic_martini-0.1.tar.gz
 
 Typical simulation steps when using MARTINI to simulation a peptide amphiphile molecule are:
 - Make all-atom .pdb file (here using vmd) from a starting pdb file containing generic structure for the molecule
